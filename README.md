@@ -1,69 +1,36 @@
-# 📘 GNSS Depth Control System – README
+# 🛰️ GNSSReader Python Module
 
-## Overview
+This module provides a high-level parser for GNSS data in NMEA 0183 format. It is designed to be used in robotics, tracking, or positioning systems where GPS/GNSS data is streamed via USB or simulated via log files.
 
-This project provides a modular GNSS parser and depth control system for underwater equipment such as a tethered camera system. It enables autonomous control of vertical positioning based on real-time GNSS location and pre-mapped seabed depth data.
-
-### Components
-
-- `gnss_reader.py` – Reads and parses NMEA data from USB GNSS receivers or log files.
-- `DEPTH_1.py` – Main controller that adjusts depth automatically using parsed GNSS position and seabed grid.
-- `test_gnss_reader.py` – A test harness to verify GNSS parsing using a log file or live USB stream.
-
-## 📦 What the Code Does
+## 📦 Module Contents
 
 ### `gnss_reader.py`
-- Auto-detects connected GNSS USB devices.
-- Parses major NMEA sentence types:
-  - `GGA`: Position, altitude
-  - `RMC`: Recommended minimum data (time, speed, date)
-  - `VTG`: Ground speed and track
-  - `GSV`: Satellite info
-  - `HDT`: True heading
-- Returns structured dataclasses for easy downstream use.
+- Reads NMEA 0183 sentences from:
+  - USB GNSS devices (via auto-detected serial port)
+  - `.log` files (for simulation/testing)
+- Parses sentence types:
+  - `$GPGGA` – GPS fix data
+  - `$GPRMC` – Recommended minimum data (position, speed, date)
+  - `$GPVTG` – Track made good and speed
+  - `$GPGSV` – Satellites in view
+  - `$GPHDT` – Heading
 
-### `DEPTH_1.py`
-- Uses `GNSSReader` to get GPS data in real time.
-- Queries seabed depth using an R-tree spatial index on `grid_min.csv`.
-- Computes target depth offset (e.g. camera 1.5m above seabed).
-- Applies PID control to move a motorized spool up/down accordingly.
-- Switches between auto and manual mode via a hardware GPIO button.
+Returns structured data using Python `@dataclass` types like `GGAData`, `RMCData`, `VTGData`, etc.
 
-## 🔧 How to Set Up
+### `test_gnss_reader.py` (example usage)
+Reads from a log file or USB and prints parsed data for visual inspection.
 
-### 1. Hardware Requirements
-- Raspberry Pi (with GPIO access)
-- GNSS USB receiver (outputs NMEA)
-- Motor driver + DC motor + limit switches
-- Mode switch button (manual/auto)
-- Seabed depth grid file: `grid_min.csv`
+---
 
-### 2. Software Dependencies
+## 🛠️ How to Use
 
-Install required packages:
+### 1. Install requirements
 
 ```bash
-sudo apt install python3-pip
-pip3 install pyserial pandas numpy rtree
+pip install pyserial
 ```
 
-Enable I2C, SPI, and GPIO if needed on Raspberry Pi.
-
-## 📂 File Structure
-
-```
-/project-dir/
-├── gnss_reader.py
-├── DEPTH_1.py
-├── test_gnss_reader.py
-├── output1.log
-├── grid_min.csv
-└── README.md
-```
-
-## 🧩 How to Integrate
-
-### Step 1: Use `GNSSReader` in your code
+### 2. Read from a real GNSS USB device
 
 ```python
 from gnss_reader import GNSSReader, GGAData
@@ -71,49 +38,59 @@ from gnss_reader import GNSSReader, GGAData
 gnss = GNSSReader(baudrate=9600)
 for msg in gnss.read_sentences():
     if isinstance(msg, GGAData):
-        print(msg.latitude, msg.longitude)
+        print(f"Lat: {msg.latitude}, Lon: {msg.longitude}, Alt: {msg.altitude}")
 ```
 
-### Step 2: Replace `pynmea2` or direct serial use in your project with this module.
-
-### Step 3: Connect parsed latitude/longitude to your control system.
-
-## 🚀 Running the System
-
-### Option 1: Live GNSS Device
-
-```bash
-python3 DEPTH_1.py
-```
-
-Make sure:
-- `grid_min.csv` is present
-- GNSS outputs `$GPGGA`
-
-### Option 2: Simulated Log File
+### 3. Or read from a `.log` file (test mode)
 
 ```python
-GNSSReader(log_file="output1.log")
+gnss = GNSSReader(log_file="output1.log")
+for msg in gnss.read_sentences():
+    print(msg)
 ```
 
-## 🧪 Testing the Parser Only
+---
+
+## 🧪 Testing with `test_gnss_reader.py`
+
+Create a file like:
+
+```python
+from gnss_reader import GNSSReader, GGAData, RMCData
+
+gnss = GNSSReader(log_file="output1.log")
+for msg in gnss.read_sentences():
+    if isinstance(msg, GGAData):
+        print("GGA:", msg)
+    elif isinstance(msg, RMCData):
+        print("RMC:", msg)
+```
+
+Run it:
 
 ```bash
 python3 test_gnss_reader.py
 ```
 
-Output will show parsed GNSS info like:
-- Coordinates
-- Speed
-- Satellite count
-- Heading
+---
 
-## 🔍 Notes
+## 💡 Notes
 
-- Extend `gnss_reader.py` with more NMEA types as needed.
-- Designed for modular testing and integration.
-- Suitable for Raspberry Pi marine robotics, drones, or autonomous boats.
+- This module avoids `pynmea2` for more flexible parsing and custom extension.
+- Designed to be **imported**, not run directly.
+- Suitable for embedded Linux, Raspberry Pi, robotics, and marine GNSS projects.
 
-## 📞 Support / Contributions
+---
 
-Feel free to extend this project or reach out for help integrating into other systems.
+## 🧩 Future Features
+
+- Add support for `$GNS`, `$ZDA`, or vendor-specific sentences
+- Log-to-CSV or database integration
+
+---
+
+## 📜 License
+
+MIT License – Use freely, modify responsibly.
+
+---
