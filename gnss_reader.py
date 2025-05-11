@@ -12,7 +12,7 @@ from typing import List, Optional, Generator
 
 # ---------- Data classes for NMEA types ----------
 
-# GGA: Global Positioning System Fix Data
+# GGA
 @dataclass
 class GGAData:
     time_utc: Optional[time]  # Time of fix (hhmmss.ss)
@@ -28,7 +28,7 @@ class GGAData:
     geoid_separation: Optional[float]  # Height of geoid above WGS84 ellipsoid
     geoid_units: Optional[str]  # Units of geoid separation
 
-# RMC: Recommended Minimum Navigation Information
+# RMC
 @dataclass
 class RMCData:
     time_utc: Optional[time]  # Time of fix
@@ -43,7 +43,7 @@ class RMCData:
     mag_variation: Optional[float]  # Magnetic variation
     mag_var_dir: Optional[str]  # Magnetic variation direction
 
-# VTG: Track made good and Ground speed
+# VTG
 @dataclass
 class VTGData:
     track_true: Optional[float]  # Track made good in degrees True
@@ -60,7 +60,7 @@ class SatelliteInfo:
     azimuth: Optional[int]  # Azimuth in degrees (0–359)
     snr: Optional[int]  # Signal to Noise Ratio (SNR)
 
-# GSV: GNSS Satellites in View
+# GSV
 @dataclass
 class GSVData:
     total_messages: Optional[int]  # Total number of messages of this type in the cycle
@@ -68,7 +68,7 @@ class GSVData:
     total_satellites: Optional[int]  # Total satellites in view
     satellites: List[SatelliteInfo]  # List of satellites in this message
 
-# HDT: Heading, True
+# HDT
 @dataclass
 class HDTData:
     heading: Optional[float]  # Heading in degrees true
@@ -76,10 +76,8 @@ class HDTData:
 # ---------- GNSSReader class for parsing ----------
 
 class GNSSReader:
-    """
-    Reads NMEA GNSS data from a live USB serial device or a log file.
-    Auto-detects USB GNSS ports and supports parsing of GGA, RMC, VTG, GSV, HDT.
-    """
+    # Reads NMEA GNSS data from a live USB serial device or a log file.
+    # Auto-detects USB GNSS ports and supports parsing of GGA, RMC, VTG, GSV, HDT.
     def __init__(self, port: Optional[str] = None, baudrate: int = 9600, log_file: Optional[str] = None, checksum_required: bool = False):
         # If log_file is provided, open file instead of serial
         self.checksum_required = checksum_required
@@ -98,9 +96,7 @@ class GNSSReader:
 
     @staticmethod
     def detect_gnss_ports() -> List[str]:
-        """
-        Detect likely GNSS USB serial ports based on common names
-        """
+        # Detect likely GNSS USB serial ports based on common names
         ports = []
         for info in list_ports.comports():
             desc = (info.description or "").lower()
@@ -114,10 +110,8 @@ class GNSSReader:
         return ports
 
     def read_sentences(self) -> Generator[object, None, None]:
-        """
-        Reads and parses NMEA sentences one by one
-        Yields parsed dataclass objects (GGAData, RMCData, etc.)
-        """
+        # Reads and parses NMEA sentences one by one
+        # Yields parsed dataclass objects (GGAData, RMCData, etc.)
         while True:
             line = None
             try:
@@ -145,9 +139,7 @@ class GNSSReader:
                 continue
 
     def parse_sentence(self, line: str):
-        """
-        Parse a single NMEA sentence string and return a dataclass instance
-        """
+        # Parse a single NMEA sentence string and return a dataclass instance
         # Handle checksum verification if enabled
         if '*' in line:
             body, cksum_str = line[1:].split('*', 1)
@@ -177,6 +169,6 @@ class GNSSReader:
             return self._parse_hdt(fields)
         return None
 
-    # -- Can add helper parsing functions for times, dates, and coordinates here --
+    #
     
 
