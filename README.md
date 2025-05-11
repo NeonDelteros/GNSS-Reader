@@ -1,8 +1,8 @@
-# 🛰️ GNSSReader Python Module
+# GNSSReader Python Module
 
 This module provides a high-level parser for GNSS data in NMEA 0183 format. It is designed to be used in robotics, tracking, or positioning systems where GPS/GNSS data is streamed via USB or simulated via log files.
 
-## 📦 Module Contents
+## Module Contents
 
 ### `gnss_reader.py`
 - Reads NMEA 0183 sentences from:
@@ -22,7 +22,7 @@ Reads from a log file or USB and prints parsed data for visual inspection.
 
 ---
 
-## 🛠️ How to Use
+## How to Use
 
 ### 1. Install requirements
 
@@ -51,7 +51,7 @@ for msg in gnss.read_sentences():
 
 ---
 
-## 🧪 Testing with `test_gnss_reader.py`
+## Testing with `test_gnss_reader.py`
 
 Create a file like:
 
@@ -74,23 +74,10 @@ python3 test_gnss_reader.py
 
 ---
 
-## 💡 Notes
+## Notes
 
 - This module avoids `pynmea2` for more flexible parsing and custom extension.
 - Designed to be **imported**, not run directly.
 - Suitable for embedded Linux, Raspberry Pi, robotics, and marine GNSS projects.
-
----
-
-## 🧩 Future Features
-
-- Add support for `$GNS`, `$ZDA`, or vendor-specific sentences
-- Log-to-CSV or database integration
-
----
-
-## 📜 License
-
-MIT License – Use freely, modify responsibly.
 
 ---
