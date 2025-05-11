@@ -14,7 +14,7 @@ from typing import List, Optional, Generator
 
 @dataclass
 class GGAData:
-    """Global Positioning System Fix Data"""
+    # Global Positioning System Fix Data
     time_utc: Optional[time]
     latitude: Optional[float]
     latitude_dir: Optional[str]
@@ -30,7 +30,7 @@ class GGAData:
 
 @dataclass
 class RMCData:
-    """Recommended Minimum Navigation Information"""
+    # Recommended Minimum Navigation Information
     time_utc: Optional[time]
     status: Optional[str]
     latitude: Optional[float]
@@ -45,7 +45,7 @@ class RMCData:
 
 @dataclass
 class VTGData:
-    """Track Made Good and Ground Speed"""
+    # Track Made Good and Ground Speed
     track_true: Optional[float]
     track_magnetic: Optional[float]
     speed_knots: Optional[float]
@@ -54,7 +54,7 @@ class VTGData:
 
 @dataclass
 class SatelliteInfo:
-    """Information for a single satellite (used in GSV)"""
+    # Information for a single satellite (used in GSV)
     prn: Optional[int]
     elevation: Optional[int]
     azimuth: Optional[int]
@@ -62,7 +62,7 @@ class SatelliteInfo:
 
 @dataclass
 class GSVData:
-    """Satellites in View"""
+    # Satellites in View
     total_messages: Optional[int]
     message_number: Optional[int]
     total_satellites: Optional[int]
@@ -70,17 +70,15 @@ class GSVData:
 
 @dataclass
 class HDTData:
-    """Heading, True (from compass or gyro)"""
+    # Heading, True (from compass or gyro)
     heading: Optional[float]
 
-# ---------- GNSSReader: Core class for reading and parsing NMEA ----------
+# ---------- Core class for reading and parsing NMEA ----------
 
 class GNSSReader:
-    """
-    Reads and parses NMEA 0183 sentences from USB serial or log file.
-    Supports GGA, RMC, VTG, GSV, HDT.
-    Automatically detects USB GNSS devices.
-    """
+    # Reads and parses NMEA 0183 sentences from USB serial or log file.
+    # Supports GGA, RMC, VTG, GSV, HDT.
+    # Automatically detects USB GNSS devices.
     def __init__(self, port: Optional[str] = None, baudrate: int = 9600, log_file: Optional[str] = None, checksum_required: bool = False):
         self.checksum_required = checksum_required
         self.ser = None
@@ -101,7 +99,7 @@ class GNSSReader:
 
     @staticmethod
     def detect_gnss_ports() -> List[str]:
-        """Scan available serial ports and return list of likely GNSS devices."""
+        # Scan available serial ports and return list of likely GNSS devices
         ports = []
         for info in list_ports.comports():
             desc = (info.description or "").lower()
@@ -116,7 +114,7 @@ class GNSSReader:
         return ports
 
     def read_sentences(self) -> Generator[object, None, None]:
-        """Generator that reads, parses, and yields NMEA sentence objects."""
+        # Generator that reads, parses, and yields NMEA sentence objects
         while True:
             try:
                 line = self.file.readline() if self.log_file else self.ser.readline().decode('ascii', errors='ignore')
@@ -132,7 +130,7 @@ class GNSSReader:
                 continue
 
     def parse_sentence(self, line: str):
-        """Core dispatcher to handle different NMEA message types."""
+        # Core dispatcher to handle different NMEA message types
         if '*' in line:
             body, cksum_str = line[1:].split('*', 1)
             calc_cksum = 0
@@ -202,7 +200,7 @@ class GNSSReader:
     # ---------- Sentence parsers ----------
 
     def _parse_gga(self, fields):
-        """Parse GGA sentence and return GGAData"""
+        # Parse GGA sentence and return GGAData
         return GGAData(
             time_utc=self._parse_time(fields[1]),
             latitude=self._parse_coord(fields[2], fields[3]),
@@ -219,7 +217,7 @@ class GNSSReader:
         )
 
     def _parse_rmc(self, fields):
-        """Parse RMC sentence and return RMCData"""
+        # Parse RMC sentence and return RMCData
         return RMCData(
             time_utc=self._parse_time(fields[1]),
             status=fields[2],
@@ -235,7 +233,7 @@ class GNSSReader:
         )
 
     def _parse_vtg(self, fields):
-        """Parse VTG sentence and return VTGData"""
+        # Parse VTG sentence and return VTGData
         return VTGData(
             track_true=float(fields[1]) if fields[1] else None,
             track_magnetic=float(fields[3]) if fields[3] else None,
@@ -245,7 +243,7 @@ class GNSSReader:
         )
 
     def _parse_gsv(self, fields):
-        """Parse GSV sentence and return GSVData"""
+        # Parse GSV sentence and return GSVData
         sats = []
         i = 4
         while i + 3 < len(fields):
@@ -264,7 +262,7 @@ class GNSSReader:
         )
 
     def _parse_hdt(self, fields):
-        """Parse HDT sentence and return HDTData"""
+        # Parse HDT sentence and return HDTData
         return HDTData(
             heading=float(fields[1]) if fields[1] else None
         )
