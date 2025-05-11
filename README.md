@@ -1,6 +1,6 @@
 # GNSS Reader Python Module
 
-This module provides a high level parser for GNSS data in NMEA format. It is designed to be used in robotics, tracking, or positioning systems where GPS/GNSS data is streamed via USB or simulated via log files.
+This module provides a high level parser for GNSS data in NMEA format, used where GPS/GNSS data is streamed via USB or simulated via log files.
 
 ## Module Contents
 
