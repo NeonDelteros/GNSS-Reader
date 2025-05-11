@@ -53,21 +53,6 @@ for msg in gnss.read_sentences():
 
 ## Testing with `test_gnss_reader.py`
 
-Create a file like:
-
-```python
-from gnss_reader import GNSSReader, GGAData, RMCData
-
-gnss = GNSSReader(log_file="output1.log")
-for msg in gnss.read_sentences():
-    if isinstance(msg, GGAData):
-        print("GGA:", msg)
-    elif isinstance(msg, RMCData):
-        print("RMC:", msg)
-```
-
-Run it:
-
 ```bash
 python3 test_gnss_reader.py
 ```
