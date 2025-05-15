@@ -30,7 +30,7 @@ Reads from a log file or USB and prints parsed data for visual inspection.
 pip install pyserial
 ```
 
-### 2. Read from a real GNSS USB device
+### 2. Read from a real GNSS USB device (GNSSReader or GNSSReaderDual)
 
 ```python
 from gnss_reader import GNSSReader, GGAData
@@ -51,7 +51,7 @@ for msg in gnss.read_sentences():
 
 ---
 
-## Testing with `test_gnss_reader.py`
+## Testing with `test_gnss_reader.py` (single)
 
 ```bash
 python3 test_gnss_reader.py
