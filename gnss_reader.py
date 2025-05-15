@@ -266,3 +266,66 @@ class GNSSReader:
         return HDTData(
             heading=float(fields[1]) if fields[1] else None
         )
+
+# ------------------------------------------------------------------
+# Seperate Dual GNSS Support: Multi-port, Multi-threaded
+# ------------------------------------------------------------------
+# Use GNSSReaderDual to read from multiple GNSS devices in parallel
+
+import threading
+import queue
+
+class GNSSReaderDual:
+    # Reads and parses NMEA sentences from two or more GNSS USB devices concurrently.
+    # Parsed data is yielded as (port, message_object) tuples.
+
+    def __init__(self, ports: Optional[List[str]] = None, baudrate: int = 9600, checksum_required: bool = False):
+        self.checksum_required = checksum_required
+        self.baudrate = baudrate
+        self.ports = ports if ports else self._detect_multiple_ports()
+        self.queue = queue.Queue()
+        self.threads = []
+
+        # Start a reader thread for each detected GNSS port
+        for port in self.ports:
+            thread = threading.Thread(target=self._reader_loop, args=(port,), daemon=True)
+            thread.start()
+            self.threads.append(thread)
+
+    def _detect_multiple_ports(self) -> List[str]:
+        # Auto-detect multiple likely GNSS ports (USB only).
+        ports = []
+        for info in list_ports.comports():
+            desc = (info.description or "").lower()
+            if any(k in desc for k in ['gps', 'gnss', 'u-blox']):
+                ports.append(info.device)
+        if not ports:
+            for info in list_ports.comports():
+                if info.device.startswith('/dev/ttyUSB') or info.device.startswith('/dev/ttyACM'):
+                    ports.append(info.device)
+        return ports
+
+    def _reader_loop(self, port: str):
+        # Reads from one GNSS device and parses incoming sentences.
+        try:
+            ser = serial.Serial(port, self.baudrate, timeout=1)
+            while True:
+                try:
+                    line = ser.readline().decode('ascii', errors='ignore').strip()
+                    if not line.startswith('$'):
+                        continue
+                    msg = GNSSReader().parse_sentence(line)
+                    if msg:
+                        self.queue.put((port, msg))
+                except:
+                    continue
+        except Exception as e:
+            print(f"[ERROR] Serial open failed on {port}: {e}")
+
+    def read_sentences(self) -> Generator[tuple, None, None]:
+        # Yields (port, message) tuples from the internal queue.
+        while True:
+            try:
+                yield self.queue.get(timeout=1)
+            except queue.Empty:
+                continue
